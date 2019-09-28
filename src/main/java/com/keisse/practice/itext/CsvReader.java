@@ -17,12 +17,12 @@ import java.util.Scanner;
 public class CsvReader {
     private static final File INPUT_FOLDER = new File("input");
     private static final String FILE_EXTENSION = ".csv";
+    private static final String REGEX = ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)|(\r\n|\n)";
 
     public static void main(String[] args) throws IOException {
         long startTime = System.nanoTime();
 
         CsvReader csvReader = new CsvReader();
-
 
         List<ByteArrayInputStream> baisList = new ArrayList<>();
         for (ByteArrayOutputStream baos : csvReader.toPdf()) {
@@ -51,23 +51,10 @@ public class CsvReader {
                          ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                         PdfDocument pdfDocument = new PdfDocument(new PdfWriter(baos));
                         Document document = new Document(pdfDocument);
-                        String tableHeading;
+
                         if (scanner.hasNext()) {
-                            tableHeading = scanner.nextLine();
-                            String[] headings = tableHeading.split(",");
-                            Table csvTable = new Table(headings.length).setHorizontalAlignment(HorizontalAlignment.CENTER);
 
-                            for (String head : headings)
-                                csvTable.addCell(new Cell().add(new Paragraph(head)));
-
-                            scanner.useDelimiter(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)|(\r\n|\n)");
-
-                            while (scanner.hasNext()) {
-                                String testStr = scanner.next().trim();
-                                csvTable.addCell(new Cell().add(new Paragraph(testStr)));
-                            }
-
-                            document.add(csvTable);
+                            document.add(csvToTable(scanner));
                             document.close();
                             output.add(baos);
                         }
@@ -78,5 +65,19 @@ public class CsvReader {
             }
         }
         return output;
+    }
+    private Table csvToTable(Scanner scanner){
+        String[] headings = scanner.nextLine().split(",");
+        Table csvTable = new Table(headings.length).setHorizontalAlignment(HorizontalAlignment.CENTER);
+        scanner.useDelimiter(REGEX);
+
+        for (String head : headings)
+            csvTable.addCell(new Cell().add(new Paragraph(head) ));
+
+        while (scanner.hasNext()) {
+            String testStr = scanner.next().trim();
+            csvTable.addCell(new Cell().add(new Paragraph(testStr)));
+        }
+        return csvTable;
     }
 }
