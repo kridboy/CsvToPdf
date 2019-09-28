@@ -7,10 +7,12 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.property.HorizontalAlignment;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class CsvReader {
     private static final File INPUT_FOLDER = new File("input");
@@ -20,6 +22,8 @@ public class CsvReader {
         long startTime = System.nanoTime();
 
         CsvReader csvReader = new CsvReader();
+
+
         List<ByteArrayInputStream> baisList = new ArrayList<>();
         for (ByteArrayOutputStream baos : csvReader.toPdf()) {
             baisList.add(new ByteArrayInputStream(baos.toByteArray()));
@@ -43,29 +47,30 @@ public class CsvReader {
                 extension = extension.substring(extension.lastIndexOf("."));
 
                 if (extension.equals(FILE_EXTENSION)) {
-                    try (
-                            BufferedReader reader = new BufferedReader(new FileReader(f));
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream()
-                    ) {
-                        PdfDocument pdfDoc = new PdfDocument(new PdfWriter(baos));
-                        Document document = new Document(pdfDoc);
+                    try (Scanner scanner = new Scanner(new FileReader(f));
+                         ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                        PdfDocument pdfDocument = new PdfDocument(new PdfWriter(baos));
+                        Document document = new Document(pdfDocument);
+                        String tableHeading;
+                        if (scanner.hasNext()) {
+                            tableHeading = scanner.nextLine();
+                            String[] headings = tableHeading.split(",");
+                            Table csvTable = new Table(headings.length).setHorizontalAlignment(HorizontalAlignment.CENTER);
 
-                        List<String> rowList = new ArrayList();
-                        reader.lines()
-                                .forEach(rowList::add);
-                        int columnCount = rowList.get(0).split(",").length;//TODO need to check here as well for possible illegal characters
-                        Table table = new Table(columnCount);
-                        for (String strRow : rowList) {
-                            String[] row = strRow.split(",");
+                            for (String head : headings)
+                                csvTable.addCell(new Cell().add(new Paragraph(head)));
 
-                            for (String data : row) {
-                                table.addCell(new Cell().add(new Paragraph(data)));
+                            scanner.useDelimiter(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)|(\r\n|\n)");
+
+                            while (scanner.hasNext()) {
+                                String testStr = scanner.next().trim();
+                                csvTable.addCell(new Cell().add(new Paragraph(testStr)));
                             }
-                        }
-                        document.add(table);
-                        document.close();
-                        output.add(baos);
 
+                            document.add(csvTable);
+                            document.close();
+                            output.add(baos);
+                        }
                     } catch (IOException ioex) {
                         ioex.printStackTrace();
                     }
