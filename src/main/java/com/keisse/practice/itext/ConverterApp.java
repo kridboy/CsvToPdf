@@ -6,6 +6,5 @@ public class ConverterApp {
     public static void main(String[] args) throws IOException {
         CsvToPdfConverter converter = new CsvToPdfConverter("input");
         converter.convertFiles();
-        long endTime = System.nanoTime();
     }
 }
