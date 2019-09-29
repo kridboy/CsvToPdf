@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2019. Matthias Keisse
+ * Copyright (c) 2019. $name
  * All Rights Reserved.
- * Programmed for Java SE 1.7
  */
+
 package com.keisse.practice.itext;
 
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -13,30 +13,36 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.property.HorizontalAlignment;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-public class CsvToPdfConverter {
-    public static final String REGEX = ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)|(\r\n|\n)";
-    public static final String CSV_EXTENSION = ".csv";
+public class LargeCsvToPdfConverter {
+    private static final String CSV_EXTENSION = ".csv";
+    private static final float FONT_SIZE = 5f;
     public static final String DEFAULT_FOLDER = "pdf";
-    public static final float FONT_SIZE = 5f;
     private final File inputFolder;
 
-    public CsvToPdfConverter() {
+    public LargeCsvToPdfConverter() {
         inputFolder = new File(DEFAULT_FOLDER);
         new File(DEFAULT_FOLDER).mkdir();
     }
 
-    public CsvToPdfConverter(String folderName) {
+    public LargeCsvToPdfConverter(String folderName) {
         inputFolder = new File(folderName);
         new File(folderName).mkdir();
     }
 
     public void convertFilesToPdf() throws IOException {
         for (Map.Entry<String, Table> tableSet : createMappedTablesFromFiles().entrySet()) {
-            try (PdfWriter writer = new PdfWriter(inputFolder.getName() + "/" + tableSet.getKey() + ".pdf");
+            try (PdfWriter writer = new PdfWriter("pdf/" + tableSet.getKey() + ".pdf");
                  PdfDocument pdfDocument = new PdfDocument(writer);
                  Document document = new Document(pdfDocument)) {
                 document.add(tableSet.getValue());
@@ -53,37 +59,25 @@ public class CsvToPdfConverter {
 
                 if (ext.equals(CSV_EXTENSION)) {
                     String fileName = inputFile.getName().substring(0, inputFile.getName().lastIndexOf('.'));
-                    tableMap.put(fileName, processCsvFileToPdfTable(inputFile));
+                    tableMap.put(fileName, processCsvFileToTable(inputFile));
                 }
             }
         }
         return tableMap;
     }
 
-    public Table processCsvFileToPdfTable(File inputFile) throws IOException {
-        Queue<String> dataQueue = new LinkedList<>();
-        try (Scanner scanner = new Scanner(new FileReader(inputFile))) {
-            while (scanner.hasNext())
-                dataQueue.offer(scanner.nextLine());
+    public Table processCsvFileToTable(File inputFile) throws IOException {
+        try (Reader reader = new FileReader(inputFile)) {
+            Iterable<CSVRecord> records = CSVFormat.DEFAULT.parse(reader);
+            Table pdfTable = new Table(records.iterator().next().size()).setHorizontalAlignment(HorizontalAlignment.CENTER);
+
+            for (CSVRecord record : records) {
+                Iterator<String> iterator = record.iterator();
+                while (iterator.hasNext())
+                    pdfTable.addCell(parseInputToCell(iterator.next()));
+            }
+            return pdfTable;
         }
-        String[] headerNames = dataQueue.poll().split(",");
-        Table pdfTable = new Table(headerNames.length).setHorizontalAlignment(HorizontalAlignment.CENTER);
-
-        for (String str : headerNames)
-            pdfTable.addCell(parseInputToCell(str));
-
-        return fillDataToTable(pdfTable, dataQueue);
-    }
-
-    private Table fillDataToTable(Table pdfTable, Queue<String> dataQueue) {
-        while (!dataQueue.isEmpty()) {
-            String row = dataQueue.poll();
-            String[] tableRow = row.split(REGEX);
-
-            for (String str : tableRow)
-                pdfTable.addCell(parseInputToCell(str));
-        }
-        return pdfTable;
     }
 
     private Cell parseInputToCell(String str) {
