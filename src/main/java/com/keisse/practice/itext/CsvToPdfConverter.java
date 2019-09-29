@@ -22,23 +22,24 @@ import java.util.*;
 public class CsvToPdfConverter {
     public static final String REGEX = ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)|(\r\n|\n)";
     public static final String CSV_EXTENSION = ".csv";
-    public static final String DEFAULT_FOLDER = "pdf";
+    public static final String DEFAULT_INPUT_FOLDER = "input";
+    public static final String OUTPUT_FOLDER = "/pdf";
     public static final float FONT_SIZE = 5f;
     private final File inputFolder;
 
     public CsvToPdfConverter() {
-        inputFolder = new File(DEFAULT_FOLDER);
-        new File(DEFAULT_FOLDER).mkdir();
+        inputFolder = new File("");
+        new File(DEFAULT_INPUT_FOLDER + OUTPUT_FOLDER).mkdir();
     }
 
     public CsvToPdfConverter(String folderName) {
         inputFolder = new File(folderName);
-        new File(folderName).mkdir();
+        new File(folderName + OUTPUT_FOLDER).mkdir();
     }
 
     public void convertFilesToPdf() throws IOException {
         for (Map.Entry<String, Table> tableSet : createMappedTablesFromFiles().entrySet()) {
-            try (PdfWriter writer = new PdfWriter(inputFolder.getName() + "/" + tableSet.getKey() + ".pdf");
+            try (PdfWriter writer = new PdfWriter(inputFolder.getName() + OUTPUT_FOLDER + "/" + tableSet.getKey() + ".pdf");
                  PdfDocument pdfDocument = new PdfDocument(writer);
                  Document document = new Document(pdfDocument)) {
                 document.add(tableSet.getValue());
@@ -50,12 +51,14 @@ public class CsvToPdfConverter {
         Map<String, Table> tableMap = new HashMap<>();
         if (inputFolder.isDirectory() && inputFolder.listFiles() != null) {
             for (File inputFile : inputFolder.listFiles()) {
-                String ext = inputFile.getName();
-                ext = ext.substring(ext.lastIndexOf('.'));
+                if (!inputFile.isDirectory()) {
+                    String ext = inputFile.getName();
+                    ext = ext.substring(ext.lastIndexOf('.'));
 
-                if (ext.equals(CSV_EXTENSION)) {
-                    String fileName = inputFile.getName().substring(0, inputFile.getName().lastIndexOf('.'));
-                    tableMap.put(fileName, processCsvFileToPdfTable(inputFile));
+                    if (ext.equals(CSV_EXTENSION)) {
+                        String fileName = inputFile.getName().substring(0, inputFile.getName().lastIndexOf('.'));
+                        tableMap.put(fileName, processCsvFileToPdfTable(inputFile));
+                    }
                 }
             }
         }

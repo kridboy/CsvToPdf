@@ -11,6 +11,5 @@ public class ConverterApp {
         //largeConverter.convertFiles();
         long endTime = System.nanoTime();
         System.out.printf("Bleep, bloop! Execution time is: %.2fMS!", (double) ((endTime - startTime) / 1000000));
-
     }
 }

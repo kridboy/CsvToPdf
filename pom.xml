@@ -24,28 +24,19 @@
     </build>
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/com.itextpdf/kernel -->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>kernel</artifactId>
             <version>7.1.8</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.itextpdf/layout -->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>layout</artifactId>
             <version>7.1.8</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.itextpdf/io -->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>io</artifactId>
-            <version>7.1.8</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.itextpdf/forms -->
-        <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>forms</artifactId>
             <version>7.1.8</version>
         </dependency>
         <dependency>
@@ -53,7 +44,12 @@
             <artifactId>commons-csv</artifactId>
             <version>1.2</version>
         </dependency>
-
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
