@@ -10,7 +10,7 @@ public class ConverterApp {
         //LargeCsvToPdfConverter largeConverter = new LargeCsvToPdfConverter(new File("input"));
         //largeConverter.convertFiles();
         long endTime = System.nanoTime();
-        System.out.printf("Bleep, bloop! Execution time is= %.2fMS!",(double)((endTime-startTime)/1000000));
+        System.out.printf("Bleep, bloop! Execution time is: %.2fMS!", (double) ((endTime - startTime) / 1000000));
 
     }
 }
