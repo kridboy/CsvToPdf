@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2019. Matthias Keisse
+ * All Rights Reserved.
+ */
 package com.keisse.practice.itext;
 
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -36,19 +40,19 @@ public class CsvToPdfConverter {
     }
 
     private Map<String, Table> createCsvTables() throws IOException {
-        Map<String, Table> csvMap = new HashMap<>();
+        Map<String, Table> tableMap = new HashMap<>();
         if (inputFolder.isDirectory() && inputFolder.listFiles() != null) {
             for (File inputFile : inputFolder.listFiles()) {
-                String extension = inputFile.getName();
-                extension = extension.substring(extension.lastIndexOf('.'));
+                String ext = inputFile.getName();
+                ext = ext.substring(ext.lastIndexOf('.'));
 
-                if (extension.equals(CSV_EXTENSION)) {
+                if (ext.equals(CSV_EXTENSION)) {
                     String fileName = inputFile.getName().substring(0, inputFile.getName().lastIndexOf('.'));
-                    csvMap.put(fileName, processDataToTable(inputFile));
+                    tableMap.put(fileName, processDataToTable(inputFile));
                 }
             }
         }
-        return csvMap;
+        return tableMap;
     }
 
     private Table processDataToTable(File inputFile) throws IOException {
